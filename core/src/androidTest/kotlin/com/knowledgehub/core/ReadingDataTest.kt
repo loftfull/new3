@@ -42,6 +42,7 @@ class ReadingDataTest {
                 )
                 db.execSQL("INSERT INTO material_labels (materialId, labelId) VALUES (9, 16)")
             }
+            migration.runMigrationsAndValidate(name, 3, true, MIGRATION_2_3).close()
             CaptureRepository.create(context, name).use { repository ->
                 val material = repository.collectionMaterials(15).first().single()
                 assertEquals(9L, material.id)
@@ -53,7 +54,6 @@ class ReadingDataTest {
                 repository.createNote(9, "Первая заметка")
                 assertEquals(listOf(9L), repository.search("замет").first().map { it.id })
             }
-            migration.runMigrationsAndValidate(name, 3, true, MIGRATION_2_3).close()
         } finally {
             context.deleteDatabase(name)
         }
