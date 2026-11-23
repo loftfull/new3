@@ -21,7 +21,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,7 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -190,12 +189,12 @@ class LibraryModel(application: Application, private val state: SavedStateHandle
     }
 }
 
-private enum class Destination(val title: String, val icon: ImageVector) {
-    Library("Библиотека", Icons.AutoMirrored.Filled.List),
-    Collections("Коллекции", Icons.Default.Star),
-    Add("Добавить", Icons.Default.Add),
-    Search("Поиск", Icons.Default.Search),
-    Ai("AI", Icons.Default.Info),
+private enum class Destination(val title: String, val icon: Int) {
+    Library("Библиотека", R.drawable.ic_reference_library),
+    Collections("Коллекции", R.drawable.ic_reference_collections),
+    Add("Добавить", R.drawable.ic_reference_add),
+    Search("Поиск", R.drawable.ic_reference_search),
+    Ai("AI", R.drawable.ic_reference_ai),
 }
 
 private enum class LibraryPage(val title: String) {
@@ -365,7 +364,7 @@ private fun ReferenceNavigation(selected: Destination, onSelect: (Destination) -
                             contentAlignment = Alignment.Center,
                         ) {
                             Icon(
-                                destination.icon, contentDescription = null, modifier = Modifier.size(21.dp),
+                                painterResource(destination.icon), contentDescription = null, modifier = Modifier.size(21.dp),
                                 tint = when {
                                     accentButton -> Color.White
                                     active -> LibraryPalette.Accent

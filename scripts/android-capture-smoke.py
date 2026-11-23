@@ -2,6 +2,8 @@
 import argparse
 import hashlib
 import re
+import shlex
+import struct
 import subprocess
 import time
 import uuid
@@ -50,6 +52,39 @@ def screenshot(directory, name):
     (directory / f"{name}.png").write_bytes(image)
 
 
+def capture_reference_viewport(directory):
+    fixtures = [
+        ("Связи между заметками", "https://example.org/connections"),
+        ("Доступность мобильных интерфейсов", "https://example.org/accessibility"),
+        ("Идеи для личной библиотеки", "Список пользовательских идей"),
+        ("Справочник по типографике", "https://example.org/typography.pdf"),
+        ("Сторителлинг для коротких видео", "https://youtu.be/example"),
+        ("Как устроена хорошая заметка", "https://example.org/good-note"),
+    ]
+    try:
+        adb("shell", "wm", "size", "780x1690")
+        adb("shell", "wm", "density", "320")
+        for title, content in fixtures:
+            adb("shell", "am", "force-stop", APP)
+            launched = adb(
+                "shell", "am", "start", "-W", "-a", "android.intent.action.SEND",
+                "-t", "text/plain", "--es", "android.intent.extra.TEXT", shlex.quote(content),
+                "--es", "android.intent.extra.SUBJECT", shlex.quote(title), APP,
+            )
+            require("Error" not in launched and APP in launched, launched)
+            locate(content)
+            tap("Сохранить")
+            locate(title)
+        screenshot(directory, "S01-populated-390dp")
+        path = directory / "S01-populated-390dp.png"
+        require(struct.unpack(">II", path.read_bytes()[16:24]) == (780, 1690), "Unexpected reference viewport")
+        for tab in ("Библиотека", "Коллекции", "Добавить", "Поиск", "AI"):
+            locate(tab)
+    finally:
+        adb("shell", "wm", "size", "reset")
+        adb("shell", "wm", "density", "reset")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("apk", type=Path)
@@ -93,6 +128,7 @@ def main():
     locate(url)
     screenshot(args.evidence, "S13-original-link")
     print("PASS: implicit ACTION_SEND, preview, offline save, process restart, exact URL.", flush=True)
+    capture_reference_viewport(args.evidence)
 
 
 if __name__ == "__main__":
