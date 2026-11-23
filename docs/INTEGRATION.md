@@ -16,3 +16,5 @@ Local verification command:
 ```
 
 The device gate uses the opt-in `android-device-qa` job. Runtime visual comparison beyond the compact S01 smoke, full taxonomy and project UI, real provider-backed AI, analytics, complete backup/restore and release remain open.
+
+Independent review found that leaving a material could discard an unsubmitted note draft. The correction retains editor state per material and adds the `keepsDraftAfterReturningToSameMaterial` Compose regression. The full host build and both Android test packages were rebuilt after the fix.

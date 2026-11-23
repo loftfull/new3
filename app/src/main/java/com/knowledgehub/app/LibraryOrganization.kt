@@ -9,6 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.knowledgehub.core.CollectionKind
@@ -170,7 +171,7 @@ internal fun ReadingControls(model: LibraryModel, materialId: Long) {
         OutlinedTextField(
             value = draft, onValueChange = { draft = it }, enabled = !writing,
             label = { Text(if (editing == null) "Новая заметка" else "Редактировать заметку") },
-            modifier = Modifier.fillMaxWidth(), minLines = 2,
+            modifier = Modifier.fillMaxWidth().testTag("note-editor"), minLines = 2,
         )
         if (conflict) Text("Заметка изменилась. Сохраните свой текст отдельно или откройте текущую версию.",
             color = MaterialTheme.colorScheme.error)

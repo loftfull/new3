@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -290,8 +291,10 @@ private fun LibraryApp(model: LibraryModel) {
     ) { padding ->
         val body = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()
         when {
-            selected != null -> item?.let {
-                Detail(it, body, model, processing.firstOrNull { record -> record.materialId == it.id }, ::openRelated)
+            selected != null -> item?.let { material ->
+                areaState.SaveableStateProvider("material-${material.id}") {
+                    Detail(material, body, model, processing.firstOrNull { it.materialId == material.id }, ::openRelated)
+                }
             }
             tab == Destination.Add -> CaptureForm(model, pending, busy, body)
             tab == Destination.Search -> Column(body) {
@@ -480,7 +483,7 @@ private fun Detail(
     val context = LocalContext.current
     var error by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
-        modifier = modifier, contentPadding = PaddingValues(16.dp),
+        modifier = modifier.testTag("material-detail"), contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Text(material.title, style = MaterialTheme.typography.headlineSmall) }
