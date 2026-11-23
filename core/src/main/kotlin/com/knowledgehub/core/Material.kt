@@ -6,7 +6,7 @@ import androidx.room.FtsOptions
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "materials", indices = [Index("canonicalUrl")])
+@Entity(tableName = "materials", indices = [Index("canonicalUrl"), Index("source")])
 data class Material(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     val kind: String,

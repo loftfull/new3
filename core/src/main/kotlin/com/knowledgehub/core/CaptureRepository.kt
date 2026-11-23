@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.room.withTransaction
 import java.io.Closeable
 import java.io.File
+import java.text.Normalizer
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
@@ -16,7 +18,75 @@ class CaptureRepository private constructor(
     private val attachments: AttachmentStorage,
 ) : Closeable {
     private val dao = database.materials()
+    private val organization = database.organization()
     val materials: Flow<List<Material>> = dao.observeAll()
+
+    val collections: Flow<List<LibraryCollection>> = organization.observeCollections()
+    val sources: Flow<List<String>> = organization.observeSources()
+
+    fun collectionMaterials(id: Long): Flow<List<Material>> = organization.observeCollectionMaterials(id)
+
+    fun filteredMaterials(filter: LibraryFilter): Flow<List<Material>> =
+        organization.observeFilteredMaterials(
+            source = filter.source?.let(::sourceHost),
+            topicId = filter.topicId,
+            tagId = filter.tagId,
+            favoritesOnly = filter.favoritesOnly,
+            oldestFirst = filter.order == LibraryOrder.OLDEST_FIRST,
+        )
+
+    fun labels(kind: LabelKind): Flow<List<TaxonomyLabel>> = organization.observeLabels(kind)
+
+    fun materialLabels(materialId: Long): Flow<List<TaxonomyLabel>> =
+        organization.observeMaterialLabels(materialId)
+
+    fun labelMaterials(labelId: Long): Flow<List<Material>> = organization.observeLabelMaterials(labelId)
+
+    suspend fun createManualCollection(name: String): LibraryCollection =
+        createCollection(name, CollectionKind.MANUAL, null)
+
+    suspend fun createSourceCollection(name: String, source: String): LibraryCollection =
+        createCollection(name, CollectionKind.SMART_SOURCE, sourceHost(source))
+
+    suspend fun setCollectionMembership(collectionId: Long, materialId: Long, included: Boolean) {
+        database.withTransaction {
+            require(organization.collectionKind(collectionId) == CollectionKind.MANUAL) {
+                "Manual collection required"
+            }
+            if (included) {
+                organization.insertMembership(CollectionMembership(collectionId, materialId))
+            } else {
+                organization.removeMembership(collectionId, materialId)
+            }
+        }
+    }
+
+    suspend fun getOrCreateLabel(kind: LabelKind, name: String): TaxonomyLabel {
+        val displayName = validatedName(name)
+        val key = nameKey(displayName)
+        return database.withTransaction {
+            organization.findLabel(kind, key) ?: TaxonomyLabel(kind = kind, name = displayName, nameKey = key)
+                .let { it.copy(id = organization.insertLabel(it)) }
+        }
+    }
+
+    suspend fun setMaterialLabel(materialId: Long, labelId: Long, applied: Boolean) {
+        if (applied) {
+            organization.insertMaterialLabel(MaterialLabel(materialId, labelId))
+        } else {
+            organization.removeMaterialLabel(materialId, labelId)
+        }
+    }
+
+    private suspend fun createCollection(name: String, kind: CollectionKind, source: String?): LibraryCollection {
+        val displayName = validatedName(name)
+        val key = nameKey(displayName)
+        return database.withTransaction {
+            require(organization.findCollection(key) == null) { "Collection name already exists" }
+            val collection = LibraryCollection(name = displayName, nameKey = key, kind = kind, source = source)
+            collection.copy(id = organization.insertCollection(collection))
+        }
+    }
 
     fun observe(id: Long): Flow<Material?> = dao.observe(id)
 
@@ -110,10 +180,29 @@ class CaptureRepository private constructor(
 
         fun create(context: Context, databaseName: String = DEFAULT_DATABASE): CaptureRepository {
             val appContext = context.applicationContext
-            val database = Room.databaseBuilder(appContext, LibraryDatabase::class.java, databaseName).build()
+            val database = Room.databaseBuilder(appContext, LibraryDatabase::class.java, databaseName)
+                .addMigrations(MIGRATION_1_2)
+                .build()
             return CaptureRepository(database, AttachmentStorage(appContext))
         }
     }
 }
 
 internal fun displayTitle(value: String): String = value.trim().lineSequence().first().take(160)
+
+
+private fun validatedName(value: String): String = value.trim().also {
+    require(it.isNotEmpty() && it.length <= 120 && it.none(Char::isISOControl)) { "Invalid name" }
+}
+
+private fun nameKey(name: String): String = Normalizer.normalize(name.lowercase(Locale.ROOT), Normalizer.Form.NFC)
+
+
+private fun sourceHost(value: String): String {
+    val input = value.trim()
+    val identity = requireNotNull(LinkIdentity.parse("https://$input")) { "Invalid source" }
+    require(input.none { it in "/?#" } && (!input.contains(':') || input.endsWith(']'))) {
+        "Source must be a domain"
+    }
+    return identity.host
+}
