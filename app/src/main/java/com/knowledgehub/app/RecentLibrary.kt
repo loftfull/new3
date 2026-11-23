@@ -18,12 +18,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -91,7 +86,7 @@ internal fun LibraryHeader(count: Int?, onSettings: () -> Unit) {
             color = Color.White, border = BorderStroke(1.dp, LibraryPalette.Divider),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Person, contentDescription = "Настройки профиля", modifier = Modifier.size(21.dp))
+                Icon(painterResource(R.drawable.ic_reference_profile), contentDescription = "Настройки профиля", modifier = Modifier.size(21.dp))
             }
         }
     }
@@ -136,7 +131,7 @@ internal fun LibraryList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = LibraryPalette.Muted,
+                    Icon(painterResource(R.drawable.ic_reference_search), contentDescription = null, tint = LibraryPalette.Muted,
                         modifier = Modifier.size(21.dp))
                     Text("Поиск по библиотеке", fontSize = 14.sp, color = LibraryPalette.Muted)
                 }
@@ -252,7 +247,12 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
     ) {
         Box(Modifier.size(44.dp).background(tone, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
             Icon(
-                if (video) Icons.Default.PlayArrow else Icons.Default.List,
+                painterResource(when {
+                    video -> R.drawable.ic_reference_video
+                    pdf || material.kind == "FILE" -> R.drawable.ic_reference_file
+                    material.kind == "TEXT" -> R.drawable.ic_reference_note
+                    else -> R.drawable.ic_reference_link
+                }),
                 contentDescription = null, modifier = Modifier.size(21.dp), tint = LibraryPalette.Accent,
             )
         }
@@ -265,7 +265,7 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
                 fontSize = 12.sp, lineHeight = 17.sp, color = LibraryPalette.Muted,
             )
         }
-        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = LibraryPalette.Muted,
+        Icon(painterResource(R.drawable.ic_reference_chevron), contentDescription = null, tint = LibraryPalette.Muted,
             modifier = Modifier.size(16.dp))
     }
 }
