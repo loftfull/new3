@@ -30,3 +30,5 @@
 | RUNNING | Codex Builder | Sprint 2, набор локальных данных для коллекций, тем и тегов. [#10](https://github.com/loftfull/new3/issues/10), `feat/library-organization`. |
 
 Владелец выбрал 01 «Недавние» 2026-11-23. Решение отразилось в [Reference Lock S01-v1](../DESIGN.md). Визуальный QA сопоставит новый Android-экран с закреплённым PNG.
+
+Проверен функциональный сценарий Foundation на Android 15. Состояние PR #9 остаётся REVIEW. Утверждённый визуальный эталон применяется отдельной задачей. [Android QA и скриншоты](evidence/android-foundation/README.md) · [Sprint 2 data PR](https://github.com/loftfull/new3/pull/13).
