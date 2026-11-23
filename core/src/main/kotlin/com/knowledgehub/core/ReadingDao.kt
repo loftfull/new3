@@ -8,6 +8,9 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 internal interface ReadingDao {
+    @Query("SELECT * FROM notes ORDER BY materialId, id")
+    suspend fun exportNotes(): List<MaterialNote>
+
     @Query("SELECT * FROM notes WHERE materialId = :materialId ORDER BY updatedAt DESC, id DESC")
     fun observeNotes(materialId: Long): Flow<List<MaterialNote>>
 

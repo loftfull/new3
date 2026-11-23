@@ -18,3 +18,15 @@
 3. Зафиксировать стратегию миграции.
 4. Создать отдельные визуальные артефакты с реестром и хэшами.
 5. Реализовать ядро и проверить на Android.
+
+## События Android Foundation · 2026-11-23
+
+| Состояние | Исполнитель | Задача и свидетельство |
+| --- | --- | --- |
+| REVIEW | Codex Builder | Android Foundation, `feat/android-foundation`, [#8](https://github.com/loftfull/new3/issues/8), [PR #9](https://github.com/loftfull/new3/pull/9). Debug APK и два Android test APK собраны на 9366c25. |
+| QA | Codex Independent Critic | Устройство готовится. APK, подпись и первый этап независимой проверки подтверждены. [Отчёт](TEST_REPORT.md) |
+| NEEDS_OWNER_DECISION | Владелец | Выбор направления S01 из десяти отдельных концепций. [#3](https://github.com/loftfull/new3/issues/3), [DESIGN.md](../DESIGN.md). |
+| REVIEW | Codex UI Designer | Функциональные контракты S01–S28. [PR #11](https://github.com/loftfull/new3/pull/11), `design/screen-contracts`. |
+| RUNNING | Codex Builder | Sprint 2, набор локальных данных для коллекций, тем и тегов. [#10](https://github.com/loftfull/new3/issues/10), `feat/library-organization`. |
+
+Владелец выбрал 01 «Недавние» 2026-11-23. Решение отразилось в [Reference Lock S01-v1](../DESIGN.md). Визуальный QA сопоставит новый Android-экран с закреплённым PNG.

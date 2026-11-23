@@ -1,5 +1,14 @@
 {
-  "reference_lock": "pending_owner_decision",
+  "reference_lock": {
+    "status": "locked",
+    "version": "S01-v1",
+    "screen_id": "S01",
+    "asset_id": "S01-CONCEPT-01",
+    "approved_by": "Repository owner",
+    "approval_date": "2026-11-23",
+    "approval_source": "Owner selection in the mission conversation",
+    "reference_commit": "4ee8dabfb9cec263d191b7956166e084c99c6cd1"
+  },
   "screen_register": "https://github.com/loftfull/new3/blob/design/knowledge-hub-foundation/docs/SCREEN_MANIFEST.md",
   "shared_stylesheet": {
     "file_path": "design/concepts/library.css",
@@ -22,7 +31,7 @@
       "sha256": "7ae30704e31c7df6bbb3486393fcbe5117e15475dbc465315249c7b6bf7ae98b",
       "editable_source": "design/concepts/01/index.html",
       "editable_source_sha256": "801a94e8eeeeab4959681e65a7a7b2742d3d72cb15850a12d706e0cb1308c67f",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "owner_approved",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Недавние"
@@ -39,7 +48,7 @@
       "sha256": "6fddcc9a020b4fe8873591be2acd86f54273c748ba0361d8c4164ef6cdbda815",
       "editable_source": "design/concepts/02/index.html",
       "editable_source_sha256": "d60eb98df5e85fd0bf8dcb8dbfd93cbcd8cb98cac2170b3f5a2d922c73aca227",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Темы"
@@ -56,7 +65,7 @@
       "sha256": "985e413f0e5c3384d53b4d8f3e9bf07d6e33f810a0e3a42bfb4f74b78b6720eb",
       "editable_source": "design/concepts/03/index.html",
       "editable_source_sha256": "b4cdf3e4b5cbe6b61e451869cb8393affdd7588135fa39abdbf147b589e5b923",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Хронология"
@@ -73,7 +82,7 @@
       "sha256": "0b028e45730cce4c24738f231608362a8b94d243d170eaeb5d0601318602cef1",
       "editable_source": "design/concepts/04/index.html",
       "editable_source_sha256": "0565380e6b06a5db37d61e6926c8bdb40ce49ecafe7d9803731acdcba349477a",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Продолжить чтение"
@@ -90,7 +99,7 @@
       "sha256": "a9bb24e67b31f221c41ff8efd99845bba7d7309bbc54c20dc7cfc5b9619bf4af",
       "editable_source": "design/concepts/05/index.html",
       "editable_source_sha256": "b2fb41a985d21e1f630a5e675fd014bfb1965b6580157bd1f5512a841e036af9",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Входящие"
@@ -107,7 +116,7 @@
       "sha256": "c139bea0f0aa5c66734e3e6ff50e112bb9f3d46baaef1895793c099e2c2e0f8c",
       "editable_source": "design/concepts/06/index.html",
       "editable_source_sha256": "6827e8087093a7416e00aefb580bba360b1311bcb8c5c808386d06dff8c52e5e",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Источники"
@@ -124,7 +133,7 @@
       "sha256": "f4e3a9d4b195bd16419da83c9782a4c9419bcf44085cde68701cb28f61bb162a",
       "editable_source": "design/concepts/07/index.html",
       "editable_source_sha256": "e3b105f0d6233b4a4230482300a7dff8b060c8e11fb36d6deeddd5bd0cf1ab3d",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Визуальная сетка"
@@ -141,7 +150,7 @@
       "sha256": "fcd2ff56ba83b5b7cf57fa7d62e4b034bbf51b72deec8c450ee5cfc2a2f63fab",
       "editable_source": "design/concepts/08/index.html",
       "editable_source_sha256": "6e4def5c68900e176f9ddb6c997bcdad5ae929a11a574ea73db90c35914983f1",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Текущий проект"
@@ -158,7 +167,7 @@
       "sha256": "f2fa60a891f6c9283efb9699d6dfabac91dd9b665417596be5a8e067b94c7b16",
       "editable_source": "design/concepts/09/index.html",
       "editable_source_sha256": "e046ef7b002a7474051a3d839b588475b3bc21f06eb8954f63dbc8af32a940ae",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Поиск"
@@ -175,7 +184,7 @@
       "sha256": "a30d050d1a74ba9779aae46c57da0dcf019bbb53a4248a4f81448f941441e17b",
       "editable_source": "design/concepts/10/index.html",
       "editable_source_sha256": "0191829b0b8429caca14db8868f91f86734c41ce82860cd73d516a5cc302e21e",
-      "approval_status": "pending_owner_decision",
+      "approval_status": "not_selected",
       "created_at": "2026-11-23",
       "design_version": "concept-v1",
       "notes": "Заметка и связи"
