@@ -27,7 +27,10 @@ def require(condition, message):
 
 def locate(label):
     for _ in range(8):
-        adb("shell", "uiautomator", "dump", "/data/local/tmp/kh-window.xml")
+        dump = adb("shell", "uiautomator", "dump", "/data/local/tmp/kh-window.xml")
+        if "dumped to" not in dump:
+            time.sleep(1)
+            continue
         tree = ET.fromstring(adb("shell", "cat", "/data/local/tmp/kh-window.xml"))
         for node in tree.iter("node"):
             if label in (node.get("text"), node.get("content-desc")):
