@@ -107,6 +107,7 @@ def capture_reference_viewport(directory):
         require(struct.unpack(">II", path.read_bytes()[16:24]) == (640, 1280), "Unexpected compact viewport")
         require(float(adb("shell", "settings", "get", "system", "font_scale")) == 1.3, "Unexpected compact font scale")
         tap("Поиск")
+        locate("Введите запрос")
         locate("Поиск по библиотеке")
         print("S01 compact evidence: 640x1280, density 320, font scale 1.3, search opens.", flush=True)
     finally:
