@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
@@ -44,6 +45,9 @@ internal object LibraryPalette {
     val Accent = Color(0xFF5047C9)
     val Violet = Color(0xFFEEEBFF)
     val Blue = Color(0xFFEAF4FF)
+    val BlueInk = Color(0xFF235D91)
+    val Document = Color(0xFFEDF1F7)
+    val DocumentInk = Color(0xFF415470)
     val Divider = Color(0xFFDDE5F0)
 }
 
@@ -65,9 +69,10 @@ internal enum class LibraryFilter(val label: String) {
 
 @Composable
 internal fun LibraryHeader(count: Int?, onSettings: () -> Unit) {
+    val top = if (LocalConfiguration.current.screenWidthDp >= 360) 20.dp else 10.dp
     Row(
         modifier = Modifier.fillMaxWidth().background(LibraryPalette.Background)
-            .statusBarsPadding().padding(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 13.dp),
+            .statusBarsPadding().padding(start = 20.dp, top = top, end = 20.dp, bottom = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -227,10 +232,16 @@ private fun LibraryFilters(selected: LibraryFilter, onFilter: (LibraryFilter) ->
 private fun MaterialRow(material: Material, onOpen: () -> Unit) {
     val video = LibraryFilter.Videos.includes(material)
     val pdf = LibraryFilter.Pdf.includes(material)
+    val document = material.kind == "FILE" || pdf
     val tone = when {
         video || material.kind == "TEXT" -> LibraryPalette.Blue
-        material.kind == "FILE" || pdf -> Color(0xFFEDF1F7)
+        document -> LibraryPalette.Document
         else -> LibraryPalette.Violet
+    }
+    val iconTint = when {
+        video || material.kind == "TEXT" -> LibraryPalette.BlueInk
+        document -> LibraryPalette.DocumentInk
+        else -> LibraryPalette.Accent
     }
     val type = when {
         video -> "Видео"
@@ -249,15 +260,15 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
             Icon(
                 painterResource(when {
                     video -> R.drawable.ic_reference_video
-                    pdf || material.kind == "FILE" -> R.drawable.ic_reference_file
+                    document -> R.drawable.ic_reference_file
                     material.kind == "TEXT" -> R.drawable.ic_reference_note
                     else -> R.drawable.ic_reference_link
                 }),
-                contentDescription = null, modifier = Modifier.size(21.dp), tint = LibraryPalette.Accent,
+                contentDescription = null, modifier = Modifier.size(21.dp), tint = iconTint,
             )
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(material.title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+            Text(material.title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold,
                 maxLines = 3, overflow = TextOverflow.Ellipsis)
             Text(
                 listOfNotNull(type, material.source, "Возможный дубликат".takeIf { material.duplicateOf != null })

@@ -95,8 +95,20 @@ def capture_reference_viewport(directory):
         screenshot(directory, "S01-populated-390dp")
         path = directory / "S01-populated-390dp.png"
         require(struct.unpack(">II", path.read_bytes()[16:24]) == (780, 1690), "Unexpected reference viewport")
+        adb("shell", "wm", "size", "640x1280")
+        adb("shell", "settings", "put", "system", "font_scale", "1.3")
+        adb("shell", "am", "force-stop", APP)
+        adb("shell", "am", "start", "-W", "-n", COMPONENT)
+        locate(titles[0])
         for tab in ("Библиотека", "Коллекции", "Добавить", "Поиск", "AI"):
             locate(tab)
+        path = directory / "S01-populated-320dp-font130.png"
+        screenshot(directory, path.stem)
+        require(struct.unpack(">II", path.read_bytes()[16:24]) == (640, 1280), "Unexpected compact viewport")
+        require(float(adb("shell", "settings", "get", "system", "font_scale")) == 1.3, "Unexpected compact font scale")
+        tap("Поиск")
+        locate("Поиск по библиотеке")
+        print("S01 compact evidence: 640x1280, density 320, font scale 1.3, search opens.", flush=True)
     finally:
         adb("shell", "wm", "size", "reset")
         adb("shell", "wm", "density", "reset")
