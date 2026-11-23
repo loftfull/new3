@@ -19,10 +19,51 @@ class CaptureRepository private constructor(
 ) : Closeable {
     private val dao = database.materials()
     private val organization = database.organization()
+    private val reading = database.reading()
     val materials: Flow<List<Material>> = dao.observeAll()
 
     val collections: Flow<List<LibraryCollection>> = organization.observeCollections()
     val sources: Flow<List<String>> = organization.observeSources()
+    val readLaterMaterials: Flow<List<Material>> = reading.observeReadLater()
+
+    fun notes(materialId: Long): Flow<List<MaterialNote>> = reading.observeNotes(materialId)
+
+    suspend fun createNote(materialId: Long, body: String): MaterialNote {
+        require(body.isNotBlank()) { "Note body is empty" }
+        val time = System.currentTimeMillis()
+        val note = MaterialNote(materialId = materialId, body = body, revision = 1, createdAt = time, updatedAt = time)
+        return note.copy(id = reading.insertNote(note))
+    }
+
+    suspend fun editNote(id: Long, expectedRevision: Long, body: String): NoteEditResult {
+        require(body.isNotBlank()) { "Note body is empty" }
+        require(expectedRevision > 0) { "Invalid note revision" }
+        return database.withTransaction {
+            val changed = reading.editNote(id, expectedRevision, body, System.currentTimeMillis())
+            val note = reading.findNote(id) ?: return@withTransaction NoteEditResult.Missing
+            if (changed > 0) NoteEditResult.Saved(note) else NoteEditResult.Conflict(note)
+        }
+    }
+
+    fun readingHistory(before: ReadingEvent? = null, limit: Int = 100): Flow<List<ReadingEvent>> {
+        require(limit in 1..200) { "Invalid reading history page size" }
+        return reading.observeHistory(before?.openedAt, before?.id, limit)
+    }
+
+    suspend fun recordReading(materialId: Long) {
+        reading.insertEvent(ReadingEvent(materialId = materialId, openedAt = System.currentTimeMillis()))
+    }
+
+    fun isReadLater(materialId: Long): Flow<Boolean> = reading.observeReadLaterMembership(materialId)
+
+    suspend fun setReadLater(materialId: Long, included: Boolean) {
+        if (included) {
+            reading.addReadLater(ReadLaterEntry(materialId, addedAt = System.currentTimeMillis()))
+        } else {
+            reading.removeReadLater(materialId)
+        }
+    }
+
 
     fun collectionMaterials(id: Long): Flow<List<Material>> = organization.observeCollectionMaterials(id)
 
@@ -181,7 +222,7 @@ class CaptureRepository private constructor(
         fun create(context: Context, databaseName: String = DEFAULT_DATABASE): CaptureRepository {
             val appContext = context.applicationContext
             val database = Room.databaseBuilder(appContext, LibraryDatabase::class.java, databaseName)
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
             return CaptureRepository(database, AttachmentStorage(appContext))
         }

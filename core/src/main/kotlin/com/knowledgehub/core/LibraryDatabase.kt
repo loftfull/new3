@@ -25,10 +25,12 @@ internal interface MaterialDao {
     suspend fun insert(material: Material): Long
 
     @Query(
-        """SELECT materials.* FROM materials
-           JOIN materials_fts ON materials.id = materials_fts.rowid
-           WHERE materials_fts MATCH :query
-           ORDER BY createdAt DESC, id DESC"""
+        """SELECT * FROM materials WHERE id IN (
+               SELECT materials_fts.rowid FROM materials_fts WHERE materials_fts MATCH :query
+               UNION
+               SELECT notes.materialId FROM notes
+               JOIN notes_fts ON notes.id = notes_fts.rowid WHERE notes_fts MATCH :query
+           ) ORDER BY createdAt DESC, id DESC"""
     )
     fun search(query: String): Flow<List<Material>>
 }
@@ -41,10 +43,15 @@ internal interface MaterialDao {
         CollectionMembership::class,
         TaxonomyLabel::class,
         MaterialLabel::class,
+        MaterialNote::class,
+        NoteIndex::class,
+        ReadingEvent::class,
+        ReadLaterEntry::class,
     ],
-    version = 2,
+    version = 3,
 )
 internal abstract class LibraryDatabase : RoomDatabase() {
     abstract fun materials(): MaterialDao
     abstract fun organization(): OrganizationDao
+    abstract fun reading(): ReadingDao
 }
