@@ -18,12 +18,6 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,7 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -49,6 +45,9 @@ internal object LibraryPalette {
     val Accent = Color(0xFF5047C9)
     val Violet = Color(0xFFEEEBFF)
     val Blue = Color(0xFFEAF4FF)
+    val BlueInk = Color(0xFF235D91)
+    val Document = Color(0xFFEDF1F7)
+    val DocumentInk = Color(0xFF415470)
     val Divider = Color(0xFFDDE5F0)
 }
 
@@ -70,9 +69,10 @@ internal enum class LibraryFilter(val label: String) {
 
 @Composable
 internal fun LibraryHeader(count: Int?, onSettings: () -> Unit) {
+    val top = if (LocalConfiguration.current.screenWidthDp >= 360) 20.dp else 10.dp
     Row(
         modifier = Modifier.fillMaxWidth().background(LibraryPalette.Background)
-            .statusBarsPadding().padding(start = 20.dp, top = 10.dp, end = 20.dp, bottom = 13.dp),
+            .statusBarsPadding().padding(start = 20.dp, top = top, end = 20.dp, bottom = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -91,7 +91,7 @@ internal fun LibraryHeader(count: Int?, onSettings: () -> Unit) {
             color = Color.White, border = BorderStroke(1.dp, LibraryPalette.Divider),
         ) {
             Box(contentAlignment = Alignment.Center) {
-                Icon(Icons.Default.Person, contentDescription = "Настройки профиля", modifier = Modifier.size(21.dp))
+                Icon(painterResource(R.drawable.ic_reference_profile), contentDescription = "Настройки профиля", modifier = Modifier.size(21.dp))
             }
         }
     }
@@ -136,7 +136,7 @@ internal fun LibraryList(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Icon(Icons.Default.Search, contentDescription = null, tint = LibraryPalette.Muted,
+                    Icon(painterResource(R.drawable.ic_reference_search), contentDescription = null, tint = LibraryPalette.Muted,
                         modifier = Modifier.size(21.dp))
                     Text("Поиск по библиотеке", fontSize = 14.sp, color = LibraryPalette.Muted)
                 }
@@ -232,10 +232,16 @@ private fun LibraryFilters(selected: LibraryFilter, onFilter: (LibraryFilter) ->
 private fun MaterialRow(material: Material, onOpen: () -> Unit) {
     val video = LibraryFilter.Videos.includes(material)
     val pdf = LibraryFilter.Pdf.includes(material)
+    val document = material.kind == "FILE" || pdf
     val tone = when {
         video || material.kind == "TEXT" -> LibraryPalette.Blue
-        material.kind == "FILE" || pdf -> Color(0xFFEDF1F7)
+        document -> LibraryPalette.Document
         else -> LibraryPalette.Violet
+    }
+    val iconTint = when {
+        video || material.kind == "TEXT" -> LibraryPalette.BlueInk
+        document -> LibraryPalette.DocumentInk
+        else -> LibraryPalette.Accent
     }
     val type = when {
         video -> "Видео"
@@ -252,12 +258,17 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
     ) {
         Box(Modifier.size(44.dp).background(tone, RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
             Icon(
-                if (video) Icons.Default.PlayArrow else Icons.Default.List,
-                contentDescription = null, modifier = Modifier.size(21.dp), tint = LibraryPalette.Accent,
+                painterResource(when {
+                    video -> R.drawable.ic_reference_video
+                    document -> R.drawable.ic_reference_file
+                    material.kind == "TEXT" -> R.drawable.ic_reference_note
+                    else -> R.drawable.ic_reference_link
+                }),
+                contentDescription = null, modifier = Modifier.size(21.dp), tint = iconTint,
             )
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(material.title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold,
+            Text(material.title, fontSize = 15.sp, lineHeight = 20.sp, fontWeight = FontWeight.Bold,
                 maxLines = 3, overflow = TextOverflow.Ellipsis)
             Text(
                 listOfNotNull(type, material.source, "Возможный дубликат".takeIf { material.duplicateOf != null })
@@ -265,7 +276,7 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
                 fontSize = 12.sp, lineHeight = 17.sp, color = LibraryPalette.Muted,
             )
         }
-        Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = LibraryPalette.Muted,
+        Icon(painterResource(R.drawable.ic_reference_chevron), contentDescription = null, tint = LibraryPalette.Muted,
             modifier = Modifier.size(16.dp))
     }
 }

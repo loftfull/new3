@@ -14,3 +14,9 @@ Project scope: Android-first personal knowledge library; see docs/PRODUCT_VISION
 8. Report exact tests run and unverified claims.
 9. Keep GitHub Actions low-cost: read-only permissions, bounded time, avoid unnecessary artifact uploads.
 10. Respect Android one-handed UX, accessibility and local-first privacy.
+
+## New-project stage gates
+
+Check the live ARENA/FCC and the owner-configured MOZG vault first. Record the active rule source and revision. Use the repository rules and documented fallback when live sources are unavailable, and keep that limitation visible. [Current handoff](docs/GOVERNANCE_RECOVERY.md)
+
+For product-facing work, apply the sequence Product Contract → Design Reference → UI Specification → Design System → Visual Shell → Functional Integration → Regression QA → Release. Check each screen against the manifest and the applicable owner-approved reference. A technical spike or fixture cannot close a product-facing gate. For visual comparisons record the Git revision, device API, viewport, font scale, seed state, raw Android screenshot and independent findings. Update the issue and evidence before advancing the gate. [S01 UI contract](docs/UI_SPEC.md)
