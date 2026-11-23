@@ -33,7 +33,18 @@ internal interface MaterialDao {
     fun search(query: String): Flow<List<Material>>
 }
 
-@Database(entities = [Material::class, MaterialIndex::class], version = 1)
+@Database(
+    entities = [
+        Material::class,
+        MaterialIndex::class,
+        LibraryCollection::class,
+        CollectionMembership::class,
+        TaxonomyLabel::class,
+        MaterialLabel::class,
+    ],
+    version = 2,
+)
 internal abstract class LibraryDatabase : RoomDatabase() {
     abstract fun materials(): MaterialDao
+    abstract fun organization(): OrganizationDao
 }
