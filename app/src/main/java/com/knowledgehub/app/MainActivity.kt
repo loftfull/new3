@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -23,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
@@ -118,12 +121,12 @@ class LibraryModel(application: Application, private val state: SavedStateHandle
     }
 }
 
-private enum class Destination(val title: String, val shortTitle: String, val icon: ImageVector) {
-    Library("Библиотека", "Главная", Icons.Default.List),
-    Collections("Коллекции", "Коллекции", Icons.Default.Star),
-    Add("Добавить", "Добавить", Icons.Default.Add),
-    Search("Поиск", "Поиск", Icons.Default.Search),
-    Ai("AI", "AI", Icons.Default.Info),
+private enum class Destination(val title: String, val icon: ImageVector) {
+    Library("Библиотека", Icons.AutoMirrored.Filled.List),
+    Collections("Коллекции", Icons.Default.Star),
+    Add("Добавить", Icons.Default.Add),
+    Search("Поиск", Icons.Default.Search),
+    Ai("AI", Icons.Default.Info),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -137,7 +140,6 @@ private fun LibraryApp(model: LibraryModel) {
     val saved by model.saved.collectAsStateWithLifecycle()
     val message by model.message.collectAsStateWithLifecycle()
     val all by model.repository.materials.collectAsStateWithLifecycle(initialValue = null)
-    val results by remember(query) { model.repository.search(query) }.collectAsStateWithLifecycle(initialValue = emptyList())
     val snackbars = remember { SnackbarHostState() }
     LaunchedEffect(pending) { if (pending.isNotEmpty()) tab = Destination.Add }
     var handledSave by rememberSaveable { mutableLongStateOf(0L) }
@@ -158,7 +160,7 @@ private fun LibraryApp(model: LibraryModel) {
                 title = { Text(if (selected == null) tab.title else "Материал") },
                 navigationIcon = {
                     if (selected != null) IconButton(onClick = { selected = null }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Назад")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                     }
                 },
                 actions = {
@@ -177,8 +179,8 @@ private fun LibraryApp(model: LibraryModel) {
                     NavigationBarItem(
                         selected = destination == tab,
                         onClick = { tab = destination },
-                        icon = { Icon(destination.icon, contentDescription = destination.title) },
-                        label = { Text(destination.shortTitle, maxLines = 1) },
+                        icon = { Icon(destination.icon, contentDescription = destination.title.takeUnless { destination == tab }) },
+                        label = { Text(destination.title, maxLines = 2, textAlign = TextAlign.Center) },
                         alwaysShowLabel = false,
                     )
                 }
@@ -199,7 +201,11 @@ private fun LibraryApp(model: LibraryModel) {
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
                 )
                 if (query.isBlank()) Placeholder("Введите запрос", "Поиск работает по сохранённым материалам.")
-                else Materials(results, "Ничего не найдено", "Попробуйте изменить запрос.", onOpen = { selected = it })
+                else key(query) {
+                    val results by remember(query) { model.repository.search(query) }
+                        .collectAsStateWithLifecycle(initialValue = null)
+                    Materials(results, "Ничего не найдено", "Попробуйте изменить запрос.", onOpen = { selected = it })
+                }
             }
             tab == Destination.Collections -> Materials(
                 all?.filter { it.favorite }, "В избранном пока пусто",
