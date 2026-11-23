@@ -199,7 +199,7 @@ private enum class Destination(val title: String, val icon: ImageVector) {
 }
 
 private enum class LibraryPage(val title: String) {
-    Recent("Библиотека"), All("Все материалы"), Profile("Профиль и настройки"),
+    Recent("Библиотека"), All("Все материалы"), Profile("Профиль и настройки"), Analytics("Аналитика"),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -252,6 +252,7 @@ private fun LibraryApp(model: LibraryModel) {
                 materialPath = ArrayList(materialPath.dropLast(1))
             }
             tab != Destination.Library -> tab = Destination.Library
+            libraryPage == LibraryPage.Analytics -> libraryPage = LibraryPage.Profile
             else -> libraryPage = LibraryPage.Recent
         }
     }
@@ -316,7 +317,10 @@ private fun LibraryApp(model: LibraryModel) {
                 CollectionLibrary(model, all.orEmpty(), body, ::openMaterial)
             }
             tab == Destination.Ai -> ProcessingQueue(all, processing, body, ::openMaterial, model::retryProcessing)
-            libraryPage == LibraryPage.Profile -> LocalProfile(all?.size, body, model::exportLibrary)
+            libraryPage == LibraryPage.Profile -> LocalProfile(all?.size, body, model::exportLibrary) {
+                libraryPage = LibraryPage.Analytics
+            }
+            libraryPage == LibraryPage.Analytics -> LocalAnalytics(all, processing, body)
             else -> LibraryList(
                 entries = all,
                 filter = libraryFilter,
