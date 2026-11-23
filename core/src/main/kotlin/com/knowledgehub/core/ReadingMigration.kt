@@ -17,7 +17,7 @@ internal val MIGRATION_2_3 = object : Migration(2, 3) {
             )"""
         )
         db.execSQL("CREATE INDEX IF NOT EXISTS index_notes_materialId ON notes (materialId)")
-        db.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING FTS4(body TEXT NOT NULL, tokenize=unicode61, content=notes)")
+        db.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `notes_fts` USING FTS4(`body` TEXT NOT NULL, tokenize=unicode61, content=`notes`)")
         db.execSQL(
             """CREATE TABLE IF NOT EXISTS reading_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
