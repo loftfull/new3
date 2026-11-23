@@ -33,7 +33,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import android.app.Application
+import com.knowledgehub.app.processing.enqueueProcessing
 import com.knowledgehub.core.*
+import com.knowledgehub.core.processing.ProcessingRecord
+import com.knowledgehub.core.processing.ProcessingState
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -73,6 +76,27 @@ class LibraryModel(application: Application, private val state: SavedStateHandle
     val message = MutableStateFlow<String?>(null)
     val saved = MutableStateFlow(0L)
 
+    init {
+        startProcessing()
+    }
+
+    private fun startProcessing() {
+        runCatching { enqueueProcessing(getApplication()) }
+            .onFailure { message.value = "Фоновая обработка недоступна. Материалы остаются в библиотеке." }
+    }
+
+    fun retryProcessing(id: Long) {
+        viewModelScope.launch {
+            try {
+                if (repository.retryProcessing(id)) startProcessing()
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (_: Exception) {
+                message.value = "Не удалось повторить обработку. Материал сохранён."
+            }
+        }
+    }
+
     fun preview(inputs: List<CaptureInput>) {
         state["pending"] = ArrayList(inputs.map(CaptureInput::bundle))
     }
@@ -97,6 +121,7 @@ class LibraryModel(application: Application, private val state: SavedStateHandle
                 repository.saveAll(inputs)
                 preview(emptyList())
                 saved.value += 1
+                startProcessing()
                 message.value = if (inputs.size == 1) "Материал сохранён" else "Материалов сохранено: ${inputs.size}"
             } catch (e: CancellationException) {
                 throw e
@@ -140,6 +165,7 @@ private fun LibraryApp(model: LibraryModel) {
     val saved by model.saved.collectAsStateWithLifecycle()
     val message by model.message.collectAsStateWithLifecycle()
     val all by model.repository.materials.collectAsStateWithLifecycle(initialValue = null)
+    val processing by model.repository.processingRecords.collectAsStateWithLifecycle(initialValue = emptyList())
     val snackbars = remember { SnackbarHostState() }
     LaunchedEffect(pending) { if (pending.isNotEmpty()) tab = Destination.Add }
     var handledSave by rememberSaveable { mutableLongStateOf(0L) }
@@ -190,7 +216,7 @@ private fun LibraryApp(model: LibraryModel) {
     ) { padding ->
         val body = Modifier.fillMaxSize().padding(padding).imePadding()
         when {
-            selected != null -> item?.let { Detail(it, body, model) }
+            selected != null -> item?.let { Detail(it, body, model, processing.firstOrNull { record -> record.materialId == it.id }) }
             tab == Destination.Add -> CaptureForm(model, pending, busy, body)
             tab == Destination.Search -> Column(body) {
                 OutlinedTextField(
@@ -211,10 +237,7 @@ private fun LibraryApp(model: LibraryModel) {
                 all?.filter { it.favorite }, "В избранном пока пусто",
                 "Откройте материал и добавьте его в избранное.", body, { selected = it }, "Избранное",
             )
-            tab == Destination.Ai -> Materials(
-                all, "Нет сохранённых материалов", "Сохраните ссылку, текст или файл.", body,
-                { selected = it }, "Материалы без AI-обработки", showProcessing = true,
-            )
+            tab == Destination.Ai -> ProcessingQueue(all, processing, body, { selected = it }, model::retryProcessing)
             else -> Materials(all, "Библиотека пока пуста",
                 "Добавьте первый материал или отправьте его из меню «Поделиться».", body, { selected = it },
                 emptyAction = { Button(onClick = { tab = Destination.Add }) { Text("Добавить материал") } },
@@ -231,7 +254,6 @@ private fun Materials(
     modifier: Modifier = Modifier,
     onOpen: (Long) -> Unit,
     heading: String? = null,
-    showProcessing: Boolean = false,
     emptyAction: @Composable (() -> Unit)? = null,
 ) {
     LazyColumn(
@@ -250,7 +272,6 @@ private fun Materials(
                         val subtitle = material.source ?: material.fileName
                         if (subtitle != null) Text(subtitle, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (material.duplicateOf != null) Text("Возможный дубликат")
-                        if (showProcessing) Text("Сохранён локально")
                     }
                 }
             }
@@ -321,7 +342,7 @@ private fun CaptureForm(
 }
 
 @Composable
-private fun Detail(material: Material, modifier: Modifier, model: LibraryModel) {
+private fun Detail(material: Material, modifier: Modifier, model: LibraryModel, analysis: ProcessingRecord?) {
     val context = LocalContext.current
     var error by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
@@ -333,6 +354,13 @@ private fun Detail(material: Material, modifier: Modifier, model: LibraryModel) 
         item {
             OutlinedButton(onClick = { model.favorite(material) }) {
                 Text(if (material.favorite) "Убрать из избранного" else "В избранное")
+            }
+        }
+        if (analysis?.state == ProcessingState.COMPLETE) {
+            item {
+                Text("Предложенная тема · ${analysis.suggestedTopic}")
+                analysis.summary?.let { Text(it) }
+                if (analysis.keywords.isNotEmpty()) Text(analysis.keywords.joinToString(" · "))
             }
         }
         material.originalUrl?.let { url ->
@@ -389,5 +417,47 @@ private fun Bundle.captureInput(): CaptureInput {
         "link" -> CaptureInput.Link(value, getString("subject"))
         "file" -> CaptureInput.File(Uri.parse(value), getString("mime"))
         else -> CaptureInput.Text(value, getString("subject"))
+    }
+}
+
+@Composable
+private fun ProcessingQueue(
+    materials: List<Material>?,
+    records: List<ProcessingRecord>,
+    modifier: Modifier,
+    open: (Long) -> Unit,
+    retry: (Long) -> Unit,
+) {
+    val states = remember(records) { records.associateBy { it.materialId } }
+    LazyColumn(
+        modifier = modifier,
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item { Text("Локальная обработка", style = MaterialTheme.typography.titleLarge) }
+        when {
+            materials == null -> item { CircularProgressIndicator() }
+            materials.isEmpty() -> item { Placeholder("Нет сохранённых материалов", "Добавьте ссылку, текст или файл.") }
+            else -> items(materials, key = { it.id }) { material ->
+                val state = states[material.id]?.state ?: ProcessingState.QUEUED
+                OutlinedCard(Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(16.dp)) {
+                        Text(material.title, style = MaterialTheme.typography.titleMedium)
+                        Text(when (state) {
+                            ProcessingState.QUEUED -> "В очереди"
+                            ProcessingState.RUNNING -> "Обрабатывается"
+                            ProcessingState.COMPLETE -> "Обработан локально"
+                            ProcessingState.FAILED -> "Ошибка обработки · оригинал сохранён"
+                        })
+                        Row {
+                            TextButton(onClick = { open(material.id) }) { Text("Открыть материал") }
+                            if (state == ProcessingState.FAILED) {
+                                TextButton(onClick = { retry(material.id) }) { Text("Повторить") }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

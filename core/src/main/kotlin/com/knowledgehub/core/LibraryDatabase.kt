@@ -5,6 +5,8 @@ import androidx.room.Database
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import com.knowledgehub.core.processing.ProcessingDao
+import com.knowledgehub.core.processing.ProcessingRecord
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -47,11 +49,13 @@ internal interface MaterialDao {
         NoteIndex::class,
         ReadingEvent::class,
         ReadLaterEntry::class,
+        ProcessingRecord::class,
     ],
-    version = 3,
+    version = 4,
 )
 internal abstract class LibraryDatabase : RoomDatabase() {
     abstract fun materials(): MaterialDao
     abstract fun organization(): OrganizationDao
     abstract fun reading(): ReadingDao
+    abstract fun processing(): ProcessingDao
 }

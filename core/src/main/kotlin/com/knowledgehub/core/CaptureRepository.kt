@@ -3,14 +3,21 @@ package com.knowledgehub.core
 import android.content.Context
 import androidx.room.Room
 import androidx.room.withTransaction
+import com.knowledgehub.core.processing.MIGRATION_3_4
+import com.knowledgehub.core.processing.MaterialAnalyzer
+import com.knowledgehub.core.processing.ProcessingRecord
+import com.knowledgehub.core.processing.ProcessingState
 import java.io.Closeable
 import java.io.File
 import java.text.Normalizer
 import java.util.Locale
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class CaptureRepository private constructor(
@@ -20,7 +27,42 @@ class CaptureRepository private constructor(
     private val dao = database.materials()
     private val organization = database.organization()
     private val reading = database.reading()
+    private val processing = database.processing()
+    private val processingLock = Mutex()
     val materials: Flow<List<Material>> = dao.observeAll()
+    val processingRecords: Flow<List<ProcessingRecord>> = processing.observeAll()
+
+    suspend fun processPending(analyzer: MaterialAnalyzer) = processingLock.withLock {
+        while (true) {
+            val batch = processing.pendingMaterials(24)
+            if (batch.isEmpty()) break
+            for (material in batch) process(material, analyzer)
+        }
+    }
+
+    suspend fun retryProcessing(materialId: Long): Boolean =
+        processing.retry(materialId, System.currentTimeMillis()) > 0
+
+    private suspend fun process(material: Material, analyzer: MaterialAnalyzer) {
+        val attempts = (processing.find(material.id)?.attempts ?: 0) + 1
+        val started = ProcessingRecord(material.id, ProcessingState.RUNNING, attempts, updateTime = System.currentTimeMillis())
+        processing.put(started)
+        val outcome = try {
+            val analysis = analyzer.analyze(material)
+            started.copy(
+                state = ProcessingState.COMPLETE,
+                summary = analysis.summary,
+                suggestedTopic = analysis.suggestedTopic,
+                keywordText = analysis.keywords.takeIf { it.isNotEmpty() }
+                    ?.joinToString(ProcessingRecord.SEPARATOR.toString()),
+            )
+        } catch (failure: CancellationException) {
+            throw failure
+        } catch (_: Exception) {
+            started.copy(state = ProcessingState.FAILED)
+        }
+        processing.put(outcome.copy(updateTime = System.currentTimeMillis()))
+    }
 
     val collections: Flow<List<LibraryCollection>> = organization.observeCollections()
     val sources: Flow<List<String>> = organization.observeSources()
@@ -222,7 +264,7 @@ class CaptureRepository private constructor(
         fun create(context: Context, databaseName: String = DEFAULT_DATABASE): CaptureRepository {
             val appContext = context.applicationContext
             val database = Room.databaseBuilder(appContext, LibraryDatabase::class.java, databaseName)
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
             return CaptureRepository(database, AttachmentStorage(appContext))
         }
