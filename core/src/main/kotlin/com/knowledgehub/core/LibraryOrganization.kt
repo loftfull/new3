@@ -5,7 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-enum class CollectionKind { MANUAL, SMART_SOURCE }
+enum class CollectionKind { MANUAL, SMART_SOURCE, PROJECT }
 enum class LabelKind { TOPIC, TAG }
 enum class LibraryOrder { NEWEST_FIRST, OLDEST_FIRST }
 

@@ -24,7 +24,7 @@ internal interface OrganizationDao {
         """SELECT materials.* FROM library_collections
            JOIN collection_memberships ON collection_memberships.collectionId = library_collections.id
            JOIN materials ON materials.id = collection_memberships.materialId
-           WHERE library_collections.id = :id AND library_collections.kind = 'MANUAL'
+           WHERE library_collections.id = :id AND library_collections.kind IN ('MANUAL', 'PROJECT')
            UNION ALL
            SELECT materials.* FROM library_collections
            JOIN materials ON materials.source = library_collections.source

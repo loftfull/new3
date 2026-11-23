@@ -271,7 +271,7 @@ private fun MaterialRow(material: Material, onOpen: () -> Unit) {
 }
 
 @Composable
-internal fun LocalProfile(count: Int?, modifier: Modifier = Modifier, export: (Uri) -> Unit) {
+internal fun LocalProfile(count: Int?, modifier: Modifier, export: (Uri) -> Unit, analytics: () -> Unit) {
     val context = LocalContext.current
     val createDocument = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) {
         it?.let(export)
@@ -284,6 +284,7 @@ internal fun LocalProfile(count: Int?, modifier: Modifier = Modifier, export: (U
         }
         item { Text("Материалы хранятся на этом устройстве и доступны без сети.") }
         if (count != null) item { Text(pluralStringResource(R.plurals.library_material_count, count, count)) }
+        item { OutlinedButton(onClick = analytics) { Text("Аналитика библиотеки") } }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedButton(onClick = { createDocument.launch("knowledge-hub-library.json") }) {

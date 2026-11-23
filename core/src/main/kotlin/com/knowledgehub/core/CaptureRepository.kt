@@ -136,13 +136,17 @@ class CaptureRepository private constructor(
     suspend fun createManualCollection(name: String): LibraryCollection =
         createCollection(name, CollectionKind.MANUAL, null)
 
+    suspend fun createProject(name: String): LibraryCollection =
+        createCollection(name, CollectionKind.PROJECT, null)
+
     suspend fun createSourceCollection(name: String, source: String): LibraryCollection =
         createCollection(name, CollectionKind.SMART_SOURCE, sourceHost(source))
 
     suspend fun setCollectionMembership(collectionId: Long, materialId: Long, included: Boolean) {
         database.withTransaction {
-            require(organization.collectionKind(collectionId) == CollectionKind.MANUAL) {
-                "Manual collection required"
+            val kind = organization.collectionKind(collectionId)
+            require(kind == CollectionKind.MANUAL || kind == CollectionKind.PROJECT) {
+                "Editable collection or project required"
             }
             if (included) {
                 organization.insertMembership(CollectionMembership(collectionId, materialId))

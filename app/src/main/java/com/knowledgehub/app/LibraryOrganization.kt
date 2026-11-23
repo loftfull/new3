@@ -31,8 +31,16 @@ internal fun CollectionLibrary(
     var selected by rememberSaveable { mutableStateOf<Long?>(null) }
     var systemList by rememberSaveable { mutableStateOf<String?>(null) }
     var creating by rememberSaveable { mutableStateOf(false) }
-    val clear = { selected = null; systemList = null; creating = false }
-    BackHandler(selected != null || systemList != null || creating, onBack = clear)
+    var projects by rememberSaveable { mutableStateOf(false) }
+    val clear = {
+        when {
+            selected != null -> selected = null
+            systemList != null -> systemList = null
+            creating -> creating = false
+            else -> projects = false
+        }
+    }
+    BackHandler(selected != null || systemList != null || creating || projects, onBack = clear)
     val entry = collections.firstOrNull { it.id == selected }
     if (entry != null) {
         CollectionContents(model, entry, materials, modifier, openMaterial, clear)
@@ -47,21 +55,38 @@ internal fun CollectionLibrary(
             if (list.isEmpty()) item { Text("В этой подборке пока нет материалов.") }
             items(list, key = { it.id }) { OpenMaterialRow(it, openMaterial) }
         } else {
-            item { Button(onClick = { creating = !creating }) { Text(if (creating) "Закрыть редактор" else "Создать коллекцию") } }
-            if (creating) item { CollectionEditor(model, sources) { id -> creating = false; selected = id } }
             item {
+                TextButton(onClick = { projects = !projects; creating = false }) {
+                    Text(if (projects) "Все коллекции" else "Проекты")
+                }
+            }
+            if (projects) item { Text("Проекты", style = MaterialTheme.typography.headlineSmall) }
+            item {
+                Button(onClick = { creating = !creating }) {
+                    Text(when {
+                        creating -> "Закрыть редактор"
+                        projects -> "Создать проект"
+                        else -> "Создать коллекцию"
+                    })
+                }
+            }
+            if (creating) item { CollectionEditor(model, sources, projects) { id -> creating = false; selected = id } }
+            if (!projects) item {
                 val favorites = materials.count { it.favorite }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { systemList = "Избранное" }) { Text("Избранное · $favorites") }
                     OutlinedButton(onClick = { systemList = "Прочитать позже" }) { Text("Позже · ${readLater.size}") }
                 }
             }
-            if (collections.isEmpty() && !creating) item { Text("Создайте подборку для сохранённых материалов.") }
-            items(collections, key = { it.id }) { collection ->
+            val shown = collections.filter { (it.kind == CollectionKind.PROJECT) == projects }
+            if (shown.isEmpty() && !creating) item {
+                Text(if (projects) "Добавьте первый проект для работы с материалами." else "Создайте подборку для сохранённых материалов.")
+            }
+            items(shown, key = { it.id }) { collection ->
                 OutlinedCard(onClick = { selected = collection.id }, modifier = Modifier.fillMaxWidth()) {
                     Column(Modifier.padding(16.dp)) {
                         Text(collection.name, style = MaterialTheme.typography.titleMedium)
-                        Text(collection.source ?: "Ручная коллекция")
+                        Text(if (collection.kind == CollectionKind.PROJECT) "Проект" else collection.source ?: "Ручная коллекция")
                     }
                 }
             }
@@ -70,15 +95,15 @@ internal fun CollectionLibrary(
 }
 
 @Composable
-private fun CollectionEditor(model: LibraryModel, sources: List<String>, onCreated: (Long) -> Unit) {
+private fun CollectionEditor(model: LibraryModel, sources: List<String>, project: Boolean, onCreated: (Long) -> Unit) {
     var name by rememberSaveable { mutableStateOf("") }
     var source by rememberSaveable { mutableStateOf<String?>(null) }
     var choosingSource by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Название коллекции") }, singleLine = true,
+        OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text(if (project) "Название проекта" else "Название коллекции") }, singleLine = true,
             modifier = Modifier.fillMaxWidth())
-        Text(if (source == null) "Ручная коллекция" else "Умная коллекция по источнику")
-        if (sources.isNotEmpty()) Box {
+        if (!project) Text(if (source == null) "Ручная коллекция" else "Умная коллекция по источнику")
+        if (!project && sources.isNotEmpty()) Box {
             OutlinedButton(onClick = { choosingSource = true }) { Text(source ?: "Выбрать источник") }
             DropdownMenu(expanded = choosingSource, onDismissRequest = { choosingSource = false }) {
                 DropdownMenuItem(text = { Text("Ручная коллекция") }, onClick = {
@@ -97,10 +122,14 @@ private fun CollectionEditor(model: LibraryModel, sources: List<String>, onCreat
             val chosen = source
             val title = name
             model.libraryUpdate {
-                val result = if (chosen == null) createManualCollection(title) else createSourceCollection(title, chosen)
+                val result = when {
+                    project -> createProject(title)
+                    chosen == null -> createManualCollection(title)
+                    else -> createSourceCollection(title, chosen)
+                }
                 onCreated(result.id)
             }
-        }) { Text("Сохранить коллекцию") }
+        }) { Text(if (project) "Сохранить проект" else "Сохранить коллекцию") }
     }
 }
 
@@ -117,9 +146,9 @@ private fun CollectionContents(
     var editing by rememberSaveable(entry.id) { mutableStateOf(false) }
     val ids = remember(members) { members.mapTo(mutableSetOf()) { it.id } }
     LazyColumn(modifier, contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        item { TextButton(onClick = back) { Text("К коллекциям") } }
+        item { TextButton(onClick = back) { Text(if (entry.kind == CollectionKind.PROJECT) "К проектам" else "К коллекциям") } }
         item { Text(entry.name, style = MaterialTheme.typography.headlineSmall) }
-        if (entry.kind == CollectionKind.MANUAL) item {
+        if (entry.kind != CollectionKind.SMART_SOURCE) item {
             OutlinedButton(onClick = { editing = !editing }) { Text(if (editing) "Готово" else "Редактировать состав") }
         }
         if (editing) items(materials, key = { it.id }) { item ->

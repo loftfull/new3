@@ -18,3 +18,9 @@ Local verification command:
 The device gate uses the opt-in `android-device-qa` job. Runtime visual comparison beyond the compact S01 smoke, full taxonomy and project UI, real provider-backed AI, analytics, complete backup/restore and release remain open.
 
 Independent review found that leaving a material could discard an unsubmitted note draft. The correction retains editor state per material and adds the `keepsDraftAfterReturningToSameMaterial` Compose regression. The full host build and both Android test packages were rebuilt after the fix.
+
+## Sprint 5 operational subset
+
+[Issue #20](https://github.com/loftfull/new3/issues/20). Projects use separate typed collection membership. Moving a material out of a project leaves the original in the library. Local analytics shows total materials, a seven-day count, favorites, completed local processing and counts by captured source. It reads from Room-backed state.
+
+Local APK, 5 JVM tests, app/core lint and Android test APK assembly passed. The independent review checked enum compatibility, smart collections, membership SQL and protection of originals. The test `projectPersistsAndRemovingMembershipPreservesSourceMaterial` is compiled. The scope still has the shared collection/project name constraint and a seven-day cutoff calculated when analytics opens. Full S18/S23 visual coverage and guided knowledge assistance are separate gates.
