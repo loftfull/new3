@@ -11,9 +11,14 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
@@ -21,12 +26,18 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.AndroidViewModel
@@ -38,6 +49,8 @@ import com.knowledgehub.core.*
 import com.knowledgehub.core.processing.ProcessingRecord
 import com.knowledgehub.core.processing.ProcessingState
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -55,14 +68,14 @@ class MainActivity : ComponentActivity() {
         setContent {
             MaterialTheme(
                 colorScheme = lightColorScheme(
-                    primary = Color(0xFF5148CC),
-                    primaryContainer = Color(0xFFE7E3FF),
+                    primary = LibraryPalette.Accent,
+                    primaryContainer = LibraryPalette.Violet,
                     onPrimaryContainer = Color(0xFF261B74),
-                    background = Color(0xFFF7F9FD),
-                    onBackground = Color(0xFF182238),
+                    background = LibraryPalette.Background,
+                    onBackground = LibraryPalette.Ink,
                     surface = Color.White,
-                    onSurface = Color(0xFF182238),
-                    onSurfaceVariant = Color(0xFF52617A),
+                    onSurface = LibraryPalette.Ink,
+                    onSurfaceVariant = LibraryPalette.Muted,
                 ),
             ) { LibraryApp(model) }
         }
@@ -83,6 +96,37 @@ class LibraryModel(application: Application, private val state: SavedStateHandle
     private fun startProcessing() {
         runCatching { enqueueProcessing(getApplication()) }
             .onFailure { message.value = "Фоновая обработка недоступна. Материалы остаются в библиотеке." }
+    }
+
+    fun libraryUpdate(onFinish: () -> Unit = {}, update: suspend CaptureRepository.() -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.update()
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (_: Exception) {
+                message.value = "Не удалось изменить данные. Попробуйте ещё раз."
+            } finally {
+                onFinish()
+            }
+        }
+    }
+
+    fun exportLibrary(uri: Uri) {
+        viewModelScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    val resolver = getApplication<Application>().contentResolver
+                    val output = checkNotNull(resolver.openOutputStream(uri, "wt"))
+                    output.bufferedWriter(Charsets.UTF_8).use { repository.exportLibrary(it) }
+                }
+                message.value = "Экспорт завершён."
+            } catch (failure: CancellationException) {
+                throw failure
+            } catch (_: Exception) {
+                message.value = "Не удалось завершить экспорт. Попробуйте другое место."
+            }
+        }
     }
 
     fun retryProcessing(id: Long) {
@@ -154,11 +198,22 @@ private enum class Destination(val title: String, val icon: ImageVector) {
     Ai("AI", Icons.Default.Info),
 }
 
+private enum class LibraryPage(val title: String) {
+    Recent("Библиотека"), All("Все материалы"), Profile("Профиль и настройки"),
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun LibraryApp(model: LibraryModel) {
     var tab by rememberSaveable { mutableStateOf(Destination.Library) }
+    var libraryPage by rememberSaveable { mutableStateOf(LibraryPage.Recent) }
+    var libraryFilter by rememberSaveable { mutableStateOf(LibraryFilter.All) }
+    var oldestFirst by rememberSaveable { mutableStateOf(false) }
+    val areaState = rememberSaveableStateHolder()
+    val recentScroll = rememberLazyListState()
+    val allScroll = rememberLazyListState()
     var selected by rememberSaveable { mutableStateOf<Long?>(null) }
+    var materialPath by rememberSaveable { mutableStateOf(arrayListOf<Long>()) }
     var query by rememberSaveable { mutableStateOf("") }
     val pending by model.pending.collectAsStateWithLifecycle(emptyList())
     val busy by model.busy.collectAsStateWithLifecycle()
@@ -170,53 +225,77 @@ private fun LibraryApp(model: LibraryModel) {
     LaunchedEffect(pending) { if (pending.isNotEmpty()) tab = Destination.Add }
     var handledSave by rememberSaveable { mutableLongStateOf(0L) }
     LaunchedEffect(saved) {
-        if (saved > handledSave) tab = Destination.Library
+        if (saved > handledSave) {
+            tab = Destination.Library
+            libraryPage = LibraryPage.Recent
+            libraryFilter = LibraryFilter.All
+            recentScroll.scrollToItem(0)
+        }
         handledSave = saved
     }
     LaunchedEffect(message) {
         message?.let { snackbars.showSnackbar(it); model.message.compareAndSet(it, null) }
     }
     val item = all?.find { it.id == selected }
-    BackHandler(selected != null || tab != Destination.Library) {
-        if (selected != null) selected = null else tab = Destination.Library
+    fun openMaterial(id: Long) {
+        selected = id
+        model.libraryUpdate { recordReading(id) }
     }
+    fun openRelated(id: Long) {
+        selected?.let { materialPath = ArrayList(materialPath + it) }
+        openMaterial(id)
+    }
+    fun goBack() {
+        when {
+            selected != null -> {
+                selected = materialPath.lastOrNull()
+                materialPath = ArrayList(materialPath.dropLast(1))
+            }
+            tab != Destination.Library -> tab = Destination.Library
+            else -> libraryPage = LibraryPage.Recent
+        }
+    }
+    val canGoBack = selected != null || tab != Destination.Library || libraryPage != LibraryPage.Recent
+    val libraryHome = selected == null && tab == Destination.Library && libraryPage == LibraryPage.Recent
+    val child = selected != null || (tab == Destination.Library && libraryPage != LibraryPage.Recent)
+    BackHandler(canGoBack, onBack = ::goBack)
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(if (selected == null) tab.title else "Материал") },
-                navigationIcon = {
-                    if (selected != null) IconButton(onClick = { selected = null }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                actions = {
-                    if (selected == null && tab == Destination.Library) {
-                        IconButton(onClick = { tab = Destination.Search }) {
-                            Icon(Icons.Default.Search, contentDescription = "Найти материал")
+            if (libraryHome) {
+                LibraryHeader(all?.size) { libraryPage = LibraryPage.Profile }
+            } else {
+                TopAppBar(
+                    title = {
+                        Text(when {
+                            selected != null -> "Материал"
+                            tab == Destination.Library -> libraryPage.title
+                            else -> tab.title
+                        })
+                    },
+                    navigationIcon = {
+                        if (child) IconButton(onClick = ::goBack) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Назад")
                         }
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
-            )
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
+                )
+            }
         },
         bottomBar = {
-            if (selected == null) NavigationBar {
-                Destination.entries.forEach { destination ->
-                    NavigationBarItem(
-                        selected = destination == tab,
-                        onClick = { tab = destination },
-                        icon = { Icon(destination.icon, contentDescription = destination.title.takeUnless { destination == tab }) },
-                        label = { Text(destination.title, maxLines = 2, textAlign = TextAlign.Center) },
-                        alwaysShowLabel = false,
-                    )
-                }
+            if (!child) ReferenceNavigation(tab) { destination ->
+                tab = destination
+                if (destination == Destination.Library) libraryPage = LibraryPage.Recent
             }
         },
         snackbarHost = { SnackbarHost(snackbars) },
     ) { padding ->
-        val body = Modifier.fillMaxSize().padding(padding).imePadding()
+        val body = Modifier.fillMaxSize().padding(padding).consumeWindowInsets(padding).imePadding()
         when {
-            selected != null -> item?.let { Detail(it, body, model, processing.firstOrNull { record -> record.materialId == it.id }) }
+            selected != null -> item?.let { material ->
+                areaState.SaveableStateProvider("material-${material.id}") {
+                    Detail(material, body, model, processing.firstOrNull { it.materialId == material.id }, ::openRelated)
+                }
+            }
             tab == Destination.Add -> CaptureForm(model, pending, busy, body)
             tab == Destination.Search -> Column(body) {
                 OutlinedTextField(
@@ -230,18 +309,74 @@ private fun LibraryApp(model: LibraryModel) {
                 else key(query) {
                     val results by remember(query) { model.repository.search(query) }
                         .collectAsStateWithLifecycle(initialValue = null)
-                    Materials(results, "Ничего не найдено", "Попробуйте изменить запрос.", onOpen = { selected = it })
+                    Materials(results, "Ничего не найдено", "Попробуйте изменить запрос.", onOpen = ::openMaterial)
                 }
             }
-            tab == Destination.Collections -> Materials(
-                all?.filter { it.favorite }, "В избранном пока пусто",
-                "Откройте материал и добавьте его в избранное.", body, { selected = it }, "Избранное",
+            tab == Destination.Collections -> areaState.SaveableStateProvider("collections") {
+                CollectionLibrary(model, all.orEmpty(), body, ::openMaterial)
+            }
+            tab == Destination.Ai -> ProcessingQueue(all, processing, body, ::openMaterial, model::retryProcessing)
+            libraryPage == LibraryPage.Profile -> LocalProfile(all?.size, body, model::exportLibrary)
+            else -> LibraryList(
+                entries = all,
+                filter = libraryFilter,
+                onFilter = { libraryFilter = it },
+                allMaterials = libraryPage == LibraryPage.All,
+                oldestFirst = oldestFirst,
+                onChangeSort = { oldestFirst = !oldestFirst },
+                scrollState = if (libraryPage == LibraryPage.All) allScroll else recentScroll,
+                onShowAll = { libraryPage = LibraryPage.All },
+                onSearch = { tab = Destination.Search },
+                onAdd = { tab = Destination.Add },
+                onOpen = ::openMaterial,
+                modifier = body,
             )
-            tab == Destination.Ai -> ProcessingQueue(all, processing, body, { selected = it }, model::retryProcessing)
-            else -> Materials(all, "Библиотека пока пуста",
-                "Добавьте первый материал или отправьте его из меню «Поделиться».", body, { selected = it },
-                emptyAction = { Button(onClick = { tab = Destination.Add }) { Text("Добавить материал") } },
-            )
+        }
+    }
+}
+
+@Composable
+private fun ReferenceNavigation(selected: Destination, onSelect: (Destination) -> Unit) {
+    Surface(color = Color.White) {
+        Column(Modifier.navigationBarsPadding()) {
+            HorizontalDivider(color = LibraryPalette.Divider)
+            Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 3.dp).selectableGroup()) {
+                Destination.entries.forEach { destination ->
+                    val active = destination == selected
+                    val accentButton = destination == Destination.Add
+                    Column(
+                        Modifier.weight(1f).heightIn(min = 59.dp)
+                            .selectable(active, role = Role.Tab, onClick = { onSelect(destination) })
+                            .padding(vertical = 5.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically),
+                    ) {
+                        val chip = when {
+                            accentButton -> LibraryPalette.Accent
+                            active -> LibraryPalette.Violet
+                            else -> Color.Transparent
+                        }
+                        Box(
+                            Modifier.size(47.dp, 28.dp).background(chip, RoundedCornerShape(22.dp)),
+                            contentAlignment = Alignment.Center,
+                        ) {
+                            Icon(
+                                destination.icon, contentDescription = null, modifier = Modifier.size(21.dp),
+                                tint = when {
+                                    accentButton -> Color.White
+                                    active -> LibraryPalette.Accent
+                                    else -> LibraryPalette.Muted
+                                },
+                            )
+                        }
+                        Text(
+                            destination.title, textAlign = TextAlign.Center, fontSize = 10.sp, lineHeight = 13.sp,
+                            color = if (active) LibraryPalette.Accent else LibraryPalette.Muted,
+                            fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -342,11 +477,13 @@ private fun CaptureForm(
 }
 
 @Composable
-private fun Detail(material: Material, modifier: Modifier, model: LibraryModel, analysis: ProcessingRecord?) {
+private fun Detail(
+    material: Material, modifier: Modifier, model: LibraryModel, analysis: ProcessingRecord?, onRelated: (Long) -> Unit,
+) {
     val context = LocalContext.current
     var error by rememberSaveable { mutableStateOf(false) }
     LazyColumn(
-        modifier = modifier, contentPadding = PaddingValues(16.dp),
+        modifier = modifier.testTag("material-detail"), contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { Text(material.title, style = MaterialTheme.typography.headlineSmall) }
@@ -388,6 +525,8 @@ private fun Detail(material: Material, modifier: Modifier, model: LibraryModel, 
             }
         }
         if (error) item { Text("Не удалось открыть материал.", color = MaterialTheme.colorScheme.error) }
+        item { ReadingControls(model, material.id) }
+        item { RelatedMaterials(model, material.id, onRelated) }
     }
 }
 

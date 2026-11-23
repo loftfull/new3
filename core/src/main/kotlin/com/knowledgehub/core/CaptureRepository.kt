@@ -9,6 +9,7 @@ import com.knowledgehub.core.processing.ProcessingRecord
 import com.knowledgehub.core.processing.ProcessingState
 import java.io.Closeable
 import java.io.File
+import java.io.Writer
 import java.text.Normalizer
 import java.util.Locale
 import kotlinx.coroutines.CancellationException
@@ -31,6 +32,13 @@ class CaptureRepository private constructor(
     private val processingLock = Mutex()
     val materials: Flow<List<Material>> = dao.observeAll()
     val processingRecords: Flow<List<ProcessingRecord>> = processing.observeAll()
+
+    suspend fun exportLibrary(output: Writer) {
+        val (materials, notes) = database.withTransaction {
+            dao.exportMaterials() to reading.exportNotes()
+        }
+        withContext(Dispatchers.IO) { writeLibraryExport(output, materials, notes) }
+    }
 
     suspend fun processPending(analyzer: MaterialAnalyzer) = processingLock.withLock {
         while (true) {
@@ -172,6 +180,8 @@ class CaptureRepository private constructor(
     }
 
     fun observe(id: Long): Flow<Material?> = dao.observe(id)
+
+    fun relatedMaterials(id: Long): Flow<List<Material>> = dao.observeRelated(id)
 
     suspend fun setFavorite(id: Long, favorite: Boolean) = dao.setFavorite(id, favorite)
 

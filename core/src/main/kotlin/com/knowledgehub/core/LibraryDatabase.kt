@@ -14,6 +14,9 @@ internal interface MaterialDao {
     @Query("SELECT * FROM materials ORDER BY createdAt DESC, id DESC")
     fun observeAll(): Flow<List<Material>>
 
+    @Query("SELECT * FROM materials ORDER BY id")
+    suspend fun exportMaterials(): List<Material>
+
     @Query("SELECT * FROM materials WHERE id = :id")
     fun observe(id: Long): Flow<Material?>
 
@@ -25,6 +28,26 @@ internal interface MaterialDao {
 
     @Insert
     suspend fun insert(material: Material): Long
+
+    @Query("""
+        WITH signals AS (
+            SELECT candidate.id,
+                CASE WHEN original.source IS NOT NULL AND candidate.source = original.source THEN 2 ELSE 0 END +
+                CASE WHEN originalAnalysis.suggestedTopic = candidateAnalysis.suggestedTopic AND originalAnalysis.suggestedTopic IN (
+                    'Разработка', 'Дизайн', 'Обучение', 'Работа') THEN 1 ELSE 0 END +
+                3 * (SELECT COUNT(*) FROM material_labels sourceLabel
+                    JOIN material_labels targetLabel ON targetLabel.labelId = sourceLabel.labelId
+                    WHERE sourceLabel.materialId = :materialId AND targetLabel.materialId = candidate.id) AS score
+            FROM materials original
+            JOIN materials candidate ON candidate.id <> original.id
+            LEFT JOIN processing_records originalAnalysis ON originalAnalysis.materialId = original.id
+            LEFT JOIN processing_records candidateAnalysis ON candidateAnalysis.materialId = candidate.id
+            WHERE original.id = :materialId
+        )
+        SELECT materials.* FROM materials JOIN signals ON signals.id = materials.id
+        WHERE signals.score > 0 ORDER BY signals.score DESC, materials.createdAt DESC, materials.id DESC LIMIT 5
+    """)
+    fun observeRelated(materialId: Long): Flow<List<Material>>
 
     @Query(
         """SELECT * FROM materials WHERE id IN (
