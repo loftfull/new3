@@ -28,3 +28,5 @@
 | NEEDS_OWNER_DECISION | Владелец | Выбор направления S01 из десяти отдельных концепций. [#3](https://github.com/loftfull/new3/issues/3), [DESIGN.md](../DESIGN.md). |
 | REVIEW | Codex UI Designer | Функциональные контракты S01–S28. [PR #11](https://github.com/loftfull/new3/pull/11), `design/screen-contracts`. |
 | RUNNING | Codex Builder | Sprint 2, набор локальных данных для коллекций, тем и тегов. [#10](https://github.com/loftfull/new3/issues/10), `feat/library-organization`. |
+
+Владелец выбрал 01 «Недавние» 2026-11-23. Решение отразилось в [Reference Lock S01-v1](../DESIGN.md). Визуальный QA сопоставит новый Android-экран с закреплённым PNG.
