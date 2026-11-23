@@ -1,0 +1,66 @@
+header.child{justify-content:flex-start;gap:10px;padding-left:12px}
+header.child h1{font-size:25px}
+.back{display:grid;place-items:center;min-width:48px;border-radius:50%;color:var(--ink)}
+.back svg{transform:rotate(180deg)}
+header .tools{margin-left:auto;flex:none}
+main>h2:first-child,main>.section:first-child{margin-top:0}
+.copy + .card,.copy + .stack{margin-top:16px}
+input,textarea,select{font:inherit;color:var(--ink);border:1px solid var(--rule);background:white;border-radius:12px;width:100%;padding:12px}
+input,select{min-height:48px}
+textarea{min-height:116px;resize:vertical;line-height:1.5}
+label.field{display:grid;gap:6px;font-size:13px;font-weight:700}
+.field + .field{margin-top:14px}
+.card+.card,.card+.slab,.slab+.card,.slab+.slab{margin-top:12px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.spread>div:first-child{min-width:0}
+.spread button{flex:none}
+.pane{padding:16px;background:white;border-radius:16px;border:1px solid var(--rule);margin-bottom:10px}
+.pane.soft{background:var(--violet);border-color:transparent}
+.pane.info{background:var(--blue);border-color:transparent}
+.pane.warning{background:#fff2dc;border-color:transparent}
+.pane.warning h3{color:#664000}
+.pane.warning p{color:#664000}
+.pane p+a{display:block;margin-top:8px}
+.eyelevel{font-size:13px;font-weight:700;color:var(--accent);margin:0 0 7px}
+.preview{display:grid;gap:10px;padding:18px;border-radius:16px;background:var(--violet);margin-bottom:12px}
+.preview h2{margin:0;font-size:25px}
+.preview .copy{margin:0}
+.preview .meta{margin:0}
+.bar{display:flex;align-items:center;gap:8px;padding:8px 20px;background:white;border-top:1px solid var(--rule)}
+.bar button{flex:1;min-width:0}
+.bar .cta{margin-top:0}
+.quiet{color:var(--accent);border:1px solid var(--rule);background:white;padding:0 10px;border-radius:12px;font-size:13px;font-weight:700}
+.outline{display:flex;align-items:center;gap:8px;min-height:52px;width:100%;border-bottom:1px solid var(--rule);font-size:14px;text-align:left}
+.outline svg:last-child{margin-left:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+.chip{border:1px solid var(--rule);padding:5px 9px;border-radius:20px;font-size:12px;background:white;color:var(--muted)}
+.kv{margin:0}
+.kv>div{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--rule);align-items:center;font-size:13px}
+.kv dt{font-weight:700}
+.kv dd{margin:0;text-align:right;color:var(--muted);overflow-wrap:anywhere}
+.reader{font:17px/1.65 Georgia,serif;color:#252d3f}
+.reader h2{font-size:23px;margin-top:20px}
+.reader p+p{margin-top:14px}
+.reader mark{background:#e4dfff;color:#182238}
+.track{height:7px;background:#e4e9f2;border-radius:10px;overflow:hidden;margin-top:10px}
+.track span{height:100%;display:block;background:var(--accent);border-radius:10px}
+.chart{display:flex;align-items:end;height:130px;gap:10px;padding-top:15px;color:var(--accent)}
+.chart div{flex:1;min-width:0;display:grid;justify-items:center;align-items:end;grid-template-rows:1fr auto;gap:7px;height:100%}
+.chart i{display:block;width:100%;background:#dad5ff;border-radius:5px 5px 0 0}
+.chart small{font-size:11px;color:var(--muted)}
+.toggle{width:42px;height:24px;border:1px solid #9aa8bf;border-radius:24px;background:#e7ebf1;position:relative;flex:none}
+.toggle:before{content:"";display:block;width:16px;height:16px;top:3px;left:3px;position:absolute;background:#546079;border-radius:50%}
+.toggle.on{background:#5247ce;border-color:#5247ce}
+.toggle.on:before{background:white;left:20px}
+.chat-user{margin:0 0 12px 28px;background:var(--violet);padding:14px;border-radius:15px 15px 3px 15px;font-size:14px;line-height:1.45}
+.chat .row{min-height:56px}
+.badge.good{color:#125737;background:#e4f5eb}.badge.neutral{color:#354562;background:#e9eef5}.badge.warn{color:#694007;background:#fff0d5}
+.badge{flex:none}
+.feature{display:flex;gap:13px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--rule)}
+.feature:last-child{border:0}
+.feature .iconbox{width:40px;height:40px}
+.empty{margin:20px 0;padding:22px 16px;border-radius:16px;background:var(--blue)}
+.empty .iconbox{margin-bottom:10px}
+.source-url{overflow-wrap:anywhere}
+body[data-screen="S14"] header{padding-bottom:8px}
+body[data-screen="S14"] main{background:#fff}

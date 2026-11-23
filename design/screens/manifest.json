@@ -1,0 +1,317 @@
+{
+  "reference_lock_base": "S01-v1",
+  "shared_styles": {
+    "design/screens/screens.css": "3d37ea400ba6e9eb261f8cb5933cebc5bd3c539b5a622ffbece88896060ff01d",
+    "design/concepts/library.css": "dcf58ac340bd9d8b5d4c41e8392bdaed12f19d4269a013ab97e32cfc8a39bdff"
+  },
+  "screens": [
+    {
+      "screen_id": "S01",
+      "title": "Библиотека",
+      "approval_status": "owner_approved",
+      "preview": "design/concepts/01/screen.png",
+      "source": "design/concepts/01/index.html",
+      "preview_sha256": "7ae30704e31c7df6bbb3486393fcbe5117e15475dbc465315249c7b6bf7ae98b",
+      "source_sha256": "801a94e8eeeeab4959681e65a7a7b2742d3d72cb15850a12d706e0cb1308c67f",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S02",
+      "title": "Все материалы",
+      "approval_status": "proposed",
+      "preview": "design/screens/S02/screen.png",
+      "source": "design/screens/S02/index.html",
+      "preview_sha256": "0f5a91ee579a439a65ed96fd502ecb9e7c6e42f1138473b774338bde189a984c",
+      "source_sha256": "ebf4fc22182382592fe613b281a255381447cf8a835447b62ec4fbf6bb436ac3",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S03",
+      "title": "Коллекции",
+      "approval_status": "proposed",
+      "preview": "design/screens/S03/screen.png",
+      "source": "design/screens/S03/index.html",
+      "preview_sha256": "ec632a7e241b9b308e19cad70e9848d65642a663db3ba761fb4d1a3f9c7e0a1a",
+      "source_sha256": "6151c1e911e000473e8af75d49d6dcb55aad3c73849093d1d3737c9cae7d0b7e",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S04",
+      "title": "Содержимое коллекции",
+      "approval_status": "proposed",
+      "preview": "design/screens/S04/screen.png",
+      "source": "design/screens/S04/index.html",
+      "preview_sha256": "62bb4634c1141785418d956ee70a296312ccc086096243ffdf63b74e9b67ac54",
+      "source_sha256": "4013baa6911358ce772f3100f5a80d18cdeb1813c25617599c75d610189f297f",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S05",
+      "title": "Редактор коллекции",
+      "approval_status": "proposed",
+      "preview": "design/screens/S05/screen.png",
+      "source": "design/screens/S05/index.html",
+      "preview_sha256": "16750335c71bbca3d874697ad23992e2cddacce01427fafaa4cefa1c96624c0f",
+      "source_sha256": "a4d53d9a9d8692fec829f8931081de883e2b29a24d75cc6ca76b071f74aa10a8",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S06",
+      "title": "Добавление материала",
+      "approval_status": "proposed",
+      "preview": "design/screens/S06/screen.png",
+      "source": "design/screens/S06/index.html",
+      "preview_sha256": "8738e9368994e9d11b4fc599987865ae95317cd30400cf78fa60b4636b414fa6",
+      "source_sha256": "11f5dd3905d12f7664f05ab01544205a05fe12b931382f237673c1bcb3eb6b87",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S07",
+      "title": "Предпросмотр импорта",
+      "approval_status": "proposed",
+      "preview": "design/screens/S07/screen.png",
+      "source": "design/screens/S07/index.html",
+      "preview_sha256": "d8fea609b2f1ac67e8c48f7634a3054c4a6f94fe9280248c467252b932374646",
+      "source_sha256": "8c7f0489fd75db2f809eb1fde4220d0ee19dd274abc9c887e729c8ad6758de67",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S08",
+      "title": "Статус сохранения",
+      "approval_status": "proposed",
+      "preview": "design/screens/S08/screen.png",
+      "source": "design/screens/S08/index.html",
+      "preview_sha256": "3f89b739b0835a2af15cb411d273903422121cd60fe1b3273409743f75dff517",
+      "source_sha256": "d7552797de587a07141c3e22907754f3c11691682b89689e5542866b76bbc142",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S09",
+      "title": "AI-входящие",
+      "approval_status": "proposed",
+      "preview": "design/screens/S09/screen.png",
+      "source": "design/screens/S09/index.html",
+      "preview_sha256": "70bb1779691b988d1bdb05cba6cae3a17b6c83e150b26c118ea112fa181cbc29",
+      "source_sha256": "8a3e17b45977178e321de4e6036151aca69a7eb829e85ad8efa11d4417744dd1",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S10",
+      "title": "Дубликаты",
+      "approval_status": "proposed",
+      "preview": "design/screens/S10/screen.png",
+      "source": "design/screens/S10/index.html",
+      "preview_sha256": "6906383ac2fadc2e936d96be9a8a7eabe1197332243569ef6aa18227b8a6a437",
+      "source_sha256": "f872876e67b5af1f422ceace739306941dc3e64475f0f4848b75f034efefee0c",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S11",
+      "title": "Умный поиск",
+      "approval_status": "proposed",
+      "preview": "design/screens/S11/screen.png",
+      "source": "design/screens/S11/index.html",
+      "preview_sha256": "b915f06314e5ace10572c3f5443d200c4255936756e435c56034b8f08547b644",
+      "source_sha256": "36e7845b5d89b4558dc00e11d5726ac47648945403c95e0baf4e2f89165c9043",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S12",
+      "title": "Результаты поиска",
+      "approval_status": "proposed",
+      "preview": "design/screens/S12/screen.png",
+      "source": "design/screens/S12/index.html",
+      "preview_sha256": "c0e0f11cda208ba9c60be7c4f7ddfc904d8ecd11d142bb5da8c2e497cffa84e9",
+      "source_sha256": "e8422b3a27368001228c822b9eaab31205501fd98a2d5eab26be6641e971e204",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S13",
+      "title": "Карточка материала",
+      "approval_status": "proposed",
+      "preview": "design/screens/S13/screen.png",
+      "source": "design/screens/S13/index.html",
+      "preview_sha256": "9afbf94a8f10aefd4b991fafd3568068c318d81cd5c537072dd63a45de2e1dac",
+      "source_sha256": "54e5adff344989867c73e3b91e9ccd253781cefaf8ff39f541eaa4d098f1e987",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S14",
+      "title": "Режим чтения",
+      "approval_status": "proposed",
+      "preview": "design/screens/S14/screen.png",
+      "source": "design/screens/S14/index.html",
+      "preview_sha256": "6683ca59c8246f01b7c678e1cdd1deef012444f7e2c6e00d5515858a82d9d812",
+      "source_sha256": "f056f5084d743079015ab9a6a60b750f0b45de1a4c8287740035acacf4f4a0d3",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S15",
+      "title": "Заметки",
+      "approval_status": "proposed",
+      "preview": "design/screens/S15/screen.png",
+      "source": "design/screens/S15/index.html",
+      "preview_sha256": "8204a665e8cf5f97f5a456054d38088254ca518ad7fff4b439c47fae9554d179",
+      "source_sha256": "f2d63af10e27d6019b45d59e4ece2a6e1a4325d8deca9b4233e8a2001342390a",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S16",
+      "title": "Связанные знания",
+      "approval_status": "proposed",
+      "preview": "design/screens/S16/screen.png",
+      "source": "design/screens/S16/index.html",
+      "preview_sha256": "6beab94352ed032b0220ad841721e563009b552aaf2ef2014e00f4cfd2a95fba",
+      "source_sha256": "b21db3a7b14bb43c3bf3449bd0eb7a2b9ee6ff5de306109f5e59f17495348a90",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S17",
+      "title": "AI-помощник",
+      "approval_status": "proposed",
+      "preview": "design/screens/S17/screen.png",
+      "source": "design/screens/S17/index.html",
+      "preview_sha256": "e913097699dfce0e012e7b2e863d45ba71c47552431c54b30603089a5ab0917b",
+      "source_sha256": "61f234b76149de5316c83b49f6edd105fbb225d5b0a97bf2acc46bfebe5b7f7f",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S18",
+      "title": "Аналитика",
+      "approval_status": "proposed",
+      "preview": "design/screens/S18/screen.png",
+      "source": "design/screens/S18/index.html",
+      "preview_sha256": "9eb69fa2b58fb12d930342e4d80a10310db1015f5031655e8384cd8f6704c235",
+      "source_sha256": "8d75e4741b3a5dc40fdc588c19b546b0484c513b9a02be5582ba5d3b79ce98ff",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S19",
+      "title": "Автоматизация",
+      "approval_status": "proposed",
+      "preview": "design/screens/S19/screen.png",
+      "source": "design/screens/S19/index.html",
+      "preview_sha256": "dd4e31ae817fc5e750722770f1da8eb2c28400b0990f9c640628f0ffd7c56b15",
+      "source_sha256": "9be39064ee1d47c06a47c179402c51839f666b216fa46329152154a3e753e50a",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S20",
+      "title": "Источники и импорт",
+      "approval_status": "proposed",
+      "preview": "design/screens/S20/screen.png",
+      "source": "design/screens/S20/index.html",
+      "preview_sha256": "ab2653119525d0cd23ad5a6badf571b2cd53a269034d9c142cc663a4580c67d3",
+      "source_sha256": "f89408b44d078f6f885433671b55a432934703fcf0968067477fe3a714685fd0",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S21",
+      "title": "Темы и теги",
+      "approval_status": "proposed",
+      "preview": "design/screens/S21/screen.png",
+      "source": "design/screens/S21/index.html",
+      "preview_sha256": "55d46fbc1e7241015610e6d5a1d7ee51be0f161ce4fe853d540c017f2bc53533",
+      "source_sha256": "9d43bd00fac52b2435a237d689f62b759ba7f027417e8d45046f339d60185439",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S22",
+      "title": "Избранное и позже",
+      "approval_status": "proposed",
+      "preview": "design/screens/S22/screen.png",
+      "source": "design/screens/S22/index.html",
+      "preview_sha256": "c04f80c92d6b7927903f4eaa98a75f85583772eed0eed7f6f9e0289993290ae6",
+      "source_sha256": "6b2e9135fb3ee4ae4fef12308eaff9627790d3860cec21b3c36bb290055596a6",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S23",
+      "title": "Проекты",
+      "approval_status": "proposed",
+      "preview": "design/screens/S23/screen.png",
+      "source": "design/screens/S23/index.html",
+      "preview_sha256": "3d9bcda52591aa952401ef1afe73879278ccbe2ba358ecc6004bb42f1e738f6f",
+      "source_sha256": "3d0ae9598ab310bdfd4d8e9166e0ad7d5eb717cfe30bf132b00e2a531e878dd1",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S24",
+      "title": "Профиль и настройки",
+      "approval_status": "proposed",
+      "preview": "design/screens/S24/screen.png",
+      "source": "design/screens/S24/index.html",
+      "preview_sha256": "db382711fa9c590ec5d235cee26b3d528ab732a2320f33e7545637348f690119",
+      "source_sha256": "c6e2c7d6143a478876eb2c59919c596bd713d01606e3a4f5d2f53f176ed19952",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S25",
+      "title": "Экспорт и резервные копии",
+      "approval_status": "proposed",
+      "preview": "design/screens/S25/screen.png",
+      "source": "design/screens/S25/index.html",
+      "preview_sha256": "0623d0006b7307e844ef7fe57dc120a85b961e3082cd3554fc08771e5414f9d3",
+      "source_sha256": "6095ff72eff7fc16dbba12d92cf3143ecc36b65f1042c9a266dd1a1554da8f8f",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S26",
+      "title": "Онбординг",
+      "approval_status": "proposed",
+      "preview": "design/screens/S26/screen.png",
+      "source": "design/screens/S26/index.html",
+      "preview_sha256": "81beb2df90b52e74672e8fd7a589e8162a24cb47e80260810356c0898f7cbafe",
+      "source_sha256": "cb5f50b3b69654df01fac88733edcf1084ebe1e5407adf5c5e8ef802149902f7",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S27",
+      "title": "Хранилище и офлайн",
+      "approval_status": "proposed",
+      "preview": "design/screens/S27/screen.png",
+      "source": "design/screens/S27/index.html",
+      "preview_sha256": "d421a2d58723b2f4b40b64c1cedbfaebaedd2e162ab23a1d6d647121019e3e9a",
+      "source_sha256": "f8b26e34618f296d5f0783633fa94d009e26cb030ab1802417208091967873b9",
+      "width": 780,
+      "height": 1690
+    },
+    {
+      "screen_id": "S28",
+      "title": "Уведомления и история",
+      "approval_status": "proposed",
+      "preview": "design/screens/S28/screen.png",
+      "source": "design/screens/S28/index.html",
+      "preview_sha256": "da24c9755bacf5de74e1bfbf59f85b9bb936f98a146cfc218b684e0399be4647",
+      "source_sha256": "dae412a0dc64daf5eb9307c999c7feedfc5e6770340c6513c559f1521498923f",
+      "width": 780,
+      "height": 1690
+    }
+  ]
+}
